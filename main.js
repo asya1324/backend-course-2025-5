@@ -60,6 +60,16 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    if (req.method === 'DELETE') {
+      await fs.promises.unlink(filePath);
+
+      res.writeHead(200, {
+        'Content-Type': 'text/plain'
+      });
+
+      return res.end('Deleted');
+    }
+
 
   } catch (error) {
     res.writeHead(404, {
