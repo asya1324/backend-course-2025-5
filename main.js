@@ -18,7 +18,7 @@ if (!fs.existsSync(cachePath)) {
 }
 
 const server = http.createServer(async (req, res) => {
-  const code = req.url.slice(1);
+  const code = req.url.slice(1); // /200 -> 200
   const filePath = path.join(cachePath, `${code}.jpg`);
 
   if (!code) {
@@ -37,7 +37,7 @@ const server = http.createServer(async (req, res) => {
 
       return res.end(data);
     }
-    
+
     if (req.method === 'PUT') {
       const chunks = [];
 
@@ -60,7 +60,7 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-    if (req.method === 'DELETE') {
+        if (req.method === 'DELETE') {
       await fs.promises.unlink(filePath);
 
       res.writeHead(200, {
@@ -69,6 +69,12 @@ const server = http.createServer(async (req, res) => {
 
       return res.end('Deleted');
     }
+
+    res.writeHead(405, {
+      'Content-Type': 'text/plain'
+    });
+
+    res.end('Method Not Allowed');
 
 
   } catch (error) {
@@ -83,3 +89,5 @@ const server = http.createServer(async (req, res) => {
 server.listen(options.port, options.host, () => {
   console.log(`Server listening on http://${options.host}:${options.port}`);
 });
+
+
