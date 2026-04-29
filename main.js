@@ -2,6 +2,7 @@ const { program } = require('commander');
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
+const superagent = require('superagent');
 
 program
   .requiredOption('-H, --host <address>')
@@ -18,7 +19,7 @@ if (!fs.existsSync(cachePath)) {
 }
 
 const server = http.createServer(async (req, res) => {
-  const code = req.url.slice(1); // /200 -> 200
+  const code = req.url.slice(1);
   const filePath = path.join(cachePath, `${code}.jpg`);
 
   if (!code) {
@@ -29,14 +30,36 @@ const server = http.createServer(async (req, res) => {
   try {
 
     if (req.method === 'GET') {
-      const data = await fs.promises.readFile(filePath);
+    let data;
 
-      res.writeHead(200, {
-        'Content-Type': 'image/jpeg'
+    if (fs.existsSync(filePath)) {
+      data = await fs.promises.readFile(filePath);
+  } else {
+    
+    try {
+      const response = await superagent
+        .get(`https://http.cat/${code}.jpg`)
+        .buffer(true);
+
+      data = response.body;
+
+      await fs.promises.writeFile(filePath, data);
+
+    } catch (error) {
+      res.writeHead(404, {
+        'Content-Type': 'text/plain'
       });
 
-      return res.end(data);
+      return res.end('Not Found');
     }
+  }
+
+  res.writeHead(200, {
+    'Content-Type': 'image/jpeg'
+  });
+
+  return res.end(data);
+}
 
     if (req.method === 'PUT') {
       const chunks = [];
