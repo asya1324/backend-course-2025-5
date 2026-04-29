@@ -28,6 +28,16 @@ const server = http.createServer(async (req, res) => {
 
   try {
 
+    if (req.method === 'GET') {
+      const data = await fs.promises.readFile(filePath);
+
+      res.writeHead(200, {
+        'Content-Type': 'image/jpeg'
+      });
+
+      return res.end(data);
+    }
+    
     if (req.method === 'PUT') {
       const chunks = [];
 
